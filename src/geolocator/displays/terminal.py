@@ -42,19 +42,16 @@ class TerminalDisplay(Display):
         try:
             datetime_obj = datetime.strptime(gps_time, "%Y-%m-%d %H:%M:%S")
 
-            time_str = datetime_obj.strftime("%H:%M:%S")
-
-            figlet = Figlet()
-
-            time_string_ascii = figlet.renderText(time_str)
-
-            for i, line in enumerate(time_string_ascii.split("\n")):
-                self.time_window.addstr(i, 0, line, curses.color_pair(2))
+            time_str = datetime_obj.strftime("%H:%M")
         except:
-            self.time_window.addstr(0, 0, "Time Unavailable", curses.color_pair(2))
-            self.time_window.addstr(
-                1, 0, f"time from server: {gps_time}", curses.color_pair(2)
-            )
+            time_str = "00:00"
+
+        figlet = Figlet()
+
+        time_string_ascii = figlet.renderText(time_str)
+
+        for i, line in enumerate(time_string_ascii.split("\n")):
+            self.time_window.addstr(i, 0, line, curses.color_pair(2))
 
         self.time_window.refresh()
 
