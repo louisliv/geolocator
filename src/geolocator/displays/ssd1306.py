@@ -131,3 +131,6 @@ class SSD1306Display(Display):
         i2c_dev = I2C(0, scl=Pin(scl_pin), sda=Pin(sda_pin), freq=200000)
         i2c_addr = [hex(ii) for ii in i2c_dev.scan()]
         return i2c_dev
+
+    def cleanup(self):
+        pass
