@@ -15,7 +15,8 @@ class TerminalDisplay(Display):
         self.stdscr = curses.initscr()
         curses.noecho()
         curses.cbreak()
-        self.stdscr.keypad(True)
+
+        self.stdscr.keypad(1)
 
         curses.start_color()
         curses.use_default_colors()
@@ -81,7 +82,7 @@ class TerminalDisplay(Display):
         self.city_window.refresh()
 
     def cleanup(self):
-        curses.nocbreak()
-        self.stdscr.keypad(False)
+        self.stdscr.keypad(0)
         curses.echo()
+        curses.nocbreak()
         curses.endwin()

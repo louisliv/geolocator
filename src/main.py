@@ -19,6 +19,5 @@ if __name__ == '__main__':
     try:
         main(display)
         display.cleanup()
-    except KeyboardInterrupt as e:
+    finally:
         display.cleanup()
-        raise e
