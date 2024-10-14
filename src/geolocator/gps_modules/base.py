@@ -15,13 +15,17 @@ class GPSData:
         longitude: float,
         gps_time: str,
         closest_city_name: str,
-        timestamp: float
+        timestamp: float,
+        altitude: float,
+        altitude_units: str
     ):
         self.latitude = latitude
         self.longitude = longitude
         self.gps_time = gps_time
         self.closest_city_name = closest_city_name
         self.timestamp = timestamp
+        self.altitude = altitude
+        self.altitude_units = altitude_units
         
     def __repr__(self):
         return f"<GPSData(latitude={self.latitude}, longitude={self.longitude}, gps_time={self.gps_time}, closest_city_name={self.closest_city_name})>"

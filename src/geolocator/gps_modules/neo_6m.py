@@ -39,6 +39,8 @@ class Neo6MGPSModule(GPSModule):
             
             lat = new_msg.latitude
             lng = new_msg.longitude
+            altitude = new_msg.altitude
+            altitude_units = new_msg.altitude_units
             
             current_city = self.get_current_city(lat, lng)
             
@@ -53,7 +55,9 @@ class Neo6MGPSModule(GPSModule):
                 longitude=lng,
                 gps_time=timestamp,
                 closest_city_name=f"{current_city.name}, {current_city.state_id}",
-                timestamp=timestamp_epoch
+                timestamp=timestamp_epoch,
+                altitude=altitude,
+                altitude_units=altitude_units
             )
             
             

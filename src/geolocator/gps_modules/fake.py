@@ -28,7 +28,9 @@ class FakeGPSModule(GPSModule):
             longitude=longitude,
             gps_time=timestamp,
             closest_city_name=f"{current_city.name}, {current_city.state_id}",
-            timestamp=gps_data["gps_time"]
+            timestamp=gps_data["gps_time"],
+            altitude=gps_data["altitude"],
+            altitude_units=gps_data["altitude_units"],
         )
 
     def retreive_fake_gps_data(self):
@@ -40,11 +42,15 @@ class FakeGPSModule(GPSModule):
             return {
                 "latitude": FAKE_LAT,
                 "longitude": FAKE_LNG,
+                "altitude": 0.0,
+                "altitude_units": "m",
                 "gps_time": datetime.now().timestamp(),
             }
 
         return {
             "latitude": data["latitude"],
             "longitude": data["longitude"],
-            "gps_time": data["timestamp"]
+            "gps_time": data["timestamp"],
+            "altitude": data.get("altitude", 0.0),
+            "altitude_units": data.get("altitude_units", "m"),
         }
