@@ -1,0 +1,50 @@
+from datetime import datetime
+import pytz
+
+import requests
+
+from geolocator.gps_modules.base import GPSModule, GPSData
+
+FAKE_LAT = 37.7749
+FAKE_LNG = -122.4194
+SQLITE_FILE = 'geolocator.db'
+
+
+class FakeGPSModule(GPSModule):
+    def read(self) -> GPSData:
+        gps_data = self.retreive_fake_gps_data()
+        
+        latitude = gps_data["latitude"]
+        longitude = gps_data["longitude"]
+        
+        current_city = self.get_current_city(latitude, longitude)
+        timezone = pytz.timezone(current_city.timezone)
+        
+        date_time_from_gps = datetime.fromtimestamp(gps_data["gps_time"], tz=timezone)
+        timestamp = date_time_from_gps.strftime("%Y-%m-%d %H:%M:%S")
+
+        return GPSData(
+            latitude=latitude,
+            longitude=longitude,
+            gps_time=timestamp,
+            closest_city_name=f"{current_city.name}, {current_city.state_id}",
+            timestamp=gps_data["gps_time"]
+        )
+
+    def retreive_fake_gps_data(self):
+        response = requests.get("http://localhost:5000/get_geo_data")
+        
+        data = response.json()
+        
+        if not data:
+            return {
+                "latitude": FAKE_LAT,
+                "longitude": FAKE_LNG,
+                "gps_time": datetime.now().timestamp(),
+            }
+
+        return {
+            "latitude": data["latitude"],
+            "longitude": data["longitude"],
+            "gps_time": data["timestamp"]
+        }
