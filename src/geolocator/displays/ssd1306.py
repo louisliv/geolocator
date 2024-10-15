@@ -2,21 +2,22 @@ from datetime import datetime
 
 import framebuf
 
-from machine import Pin, I2C
-from ssd1306 import SSD1306_I2C
+import board
+import adafruit_ssd1306
 
 from geolocator.gps_modules import GPSData
 from geolocator.displays.base import Display
 from geolocator.displays.constants import TACO, NUMS_502210, NUMS_642, NUMS_764
 
-SCL_PIN = 17
-SDA_PIN = 16
+WIDTH = 128
+HEIGHT = 64
+SSD1306_ADDR = 0x3C
 
 
 class SSD1306Display(Display):
     def __init__(self):
-        self.i2c_dev = self.init_i2c(SCL_PIN, SDA_PIN)
-        self.oled = SSD1306_I2C(128, 64, self.i2c_dev)
+        self.i2c_dev = self.init_i2c()
+        self.oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, self.i2c_dev, addr=0x3C)
 
     def render(self, gps_data: GPSData):
         closest_city = gps_data.closest_city_name
@@ -127,9 +128,8 @@ class SSD1306Display(Display):
         self.oled.fill_rect(0, 10, 28, 34, 0)
         self.oled.show()
 
-    def init_i2c(scl_pin, sda_pin):
-        i2c_dev = I2C(0, scl=Pin(scl_pin), sda=Pin(sda_pin), freq=200000)
-        i2c_addr = [hex(ii) for ii in i2c_dev.scan()]
+    def init_i2c(self):
+        i2c_dev = board.I2C()
         return i2c_dev
 
     def cleanup(self):

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='geolocator',
-    version='0.2.0',
+    version='0.3.0',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     package_data={
@@ -16,5 +16,9 @@ setup(
         'pyfiglet',
         'SQLAlchemy',
         'pytz',
+        'Adafruit-SSD1306',
+        'adafruit-circuitpython-framebuf',
+        'adafruit-circuitpython-ssd1306',
+        'pynmea2',
     ],
 )
