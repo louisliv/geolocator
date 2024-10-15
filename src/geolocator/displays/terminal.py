@@ -38,7 +38,7 @@ class TerminalDisplay(Display):
         try:
             datetime_obj = datetime.strptime(gps_time, "%Y-%m-%d %H:%M:%S")
 
-            time_str = datetime_obj.strftime("%H:%M")
+            time_str = datetime_obj.strftime("%-I:%M %p")
         except:
             time_str = "00:00"
 
