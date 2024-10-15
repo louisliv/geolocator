@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FlaskApp</title>
+</head>
+<body>
+    <h1>GPS Data</h1>
+</body>
+<script>
+    // query the /gps_data endpoint every 5 seconds. Update the page with the new data.
+    
+    function getGPSData() {
+        fetch('/gps_data')
+        .then(response => response.json())
+        .then(data => {
+            document.body.innerHTML = `
+                <h1>GPS Data</h1>
+                <h2>City: ${data.closest_city_name}</h2>
+                <h2>Latitude: ${data.latitude}</h2>
+                <h2>Longitude: ${data.longitude}</h2>
+                <h2>Altitude: ${data.altitude}${data.altitude_units}</h2>
+            `;
+        });
+    }
+
+    getGPSData();
+    
+    setInterval(() => {
+        getGPSData();
+    }, 5000);
+</script>
+</html>
