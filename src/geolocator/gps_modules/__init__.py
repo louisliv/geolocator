@@ -1,4 +1,9 @@
-from geolocator.gps_modules.base import GPSModule, GPSData
+from geolocator.gps_modules.base import (
+    GPSModule,
+    GPSData,
+    AltitudeData,
+    GPSCompleteData,
+)
 
 
 def get_gps_module() -> GPSModule:
@@ -6,9 +11,10 @@ def get_gps_module() -> GPSModule:
 
     # try to import serial. Use the FakeGPSModule if it fails
     try:
-        import serial # type: ignore
+        import serial  # type: ignore
     except ImportError:
         from geolocator.gps_modules.fake import FakeGPSModule
+
         return FakeGPSModule()
 
     return init_real_gps()
@@ -16,4 +22,5 @@ def get_gps_module() -> GPSModule:
 
 def init_real_gps():
     from geolocator.gps_modules.neo_6m import Neo6MGPSModule
+
     return Neo6MGPSModule()

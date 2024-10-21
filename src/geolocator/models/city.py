@@ -3,8 +3,9 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class City(Base):
-    __tablename__ = 'cities'
+    __tablename__ = "cities"
 
     name = Column(String)
     name_ascii = Column(String)

@@ -1,136 +1,118 @@
 from datetime import datetime
+from pathlib import Path
 
-import framebuf
+from luma.core.interface.serial import i2c
+from luma.oled.device import ssd1306, device
+from luma.core.render import canvas, ImageDraw
 
-import board
-import adafruit_ssd1306
+from PIL import ImageFont
 
-from geolocator.gps_modules import GPSData
+from geolocator.gps_modules import GPSCompleteData
 from geolocator.displays.base import Display
-from geolocator.displays.constants import TACO, NUMS_502210, NUMS_642, NUMS_764
+import geolocator
 
 WIDTH = 128
 HEIGHT = 64
 SSD1306_ADDR = 0x3C
+FONT_FILE = "fonts/red_alert.ttf"
+FONT_FILE_PATH = Path(geolocator.__file__).parent / FONT_FILE
+CLOCK_FORMAT = "%-I:%M"
+MAX_CITY_NAME_LENGTH = 17
 
 
 class SSD1306Display(Display):
     def __init__(self):
         self.i2c_dev = self.init_i2c()
-        self.oled = adafruit_ssd1306.SSD1306_I2C(WIDTH, HEIGHT, self.i2c_dev, addr=0x3C)
+        self.oled: device = ssd1306(self.i2c_dev)
+        self.large_font = ImageFont.truetype(str(FONT_FILE_PATH), 48)
+        self.small_font = ImageFont.truetype(str(FONT_FILE_PATH), 18)
+        self.xs_font = ImageFont.truetype(str(FONT_FILE_PATH), 12)
+        self.time_with_seconds_font = ImageFont.truetype(str(FONT_FILE_PATH), 36)
 
-    def render(self, gps_data: GPSData):
+    def render_altitude(self, altitude_data):
+        pass
+
+    def display_altitude(self, altitude_data, draw: ImageDraw):
+        # Put the altitude data in the bottom left hand corner
+        data_to_display = f"{altitude_data.altitude} {altitude_data.altitude_units}"
+
+        # get y coordinate from the bounding box
+        bounding_box = self.oled.bounding_box
+        height = bounding_box[3] - bounding_box[1]
+        text_height = self.xs_font.getsize(data_to_display)[1]
+        y = height - text_height
+
+        draw.text(
+            (0, 15),
+            f"Alt: {altitude_data.altitude} {altitude_data.altitude_units}",
+            fill="white",
+            font=self.xs_font,
+        )
+
+    def render(self, gps_data: GPSCompleteData):
         closest_city = gps_data.closest_city_name
 
         gps_datetime = datetime.strptime(gps_data.gps_time, "%Y-%m-%d %H:%M:%S")
-        gps_hours = gps_datetime.hour
-        gps_minutes = gps_datetime.minute
 
         gps_latitute = gps_data.latitude
         gps_longitude = gps_data.longitude
 
-        self.display_clock(gps_hours, gps_minutes)
-        self.display_home_clock(gps_hours, gps_minutes)
-        self.display_gps_filler()
-        self.display_text([closest_city])
-        self.display_coordinates(gps_latitute, gps_longitude)
+        with canvas(self.oled) as draw:
+            self.display_clock(gps_datetime, draw)
+            self.display_city(closest_city, draw)
+            # self.display_coordinates(gps_latitute, gps_longitude, draw)
+            self.display_altitude(gps_data, draw)
 
-    def display_text(self, text_list):
-        for i, line in enumerate(text_list):
-            self.oled.fill_rect(0, i * 10, 128, 10, 0)
-            self.oled.text(line, 0, i * 10)
-        self.oled.show()
+    def display_city(self, text: str, draw: ImageDraw):
+        # Display the city name on the first line of the OLED display
+        city_name = self._format_city_name(text)
+        draw.text((0, 0), city_name, fill="white", font=self.small_font)
 
-    def display_taco(self):
-        self.oled.fill_rect(0, 10, 28, 28, 0)
-        fb = framebuf.FrameBuffer(TACO, 28, 28, framebuf.MONO_HLSB)
-        self.oled.blit(fb, 0, 10)
-        self.oled.show()
+    def _format_city_name(self, city_name: str) -> str:
+        # Format the city name to fit on the OLED display. If the city name is too long, we will truncate it
+        # and add an ellipsis at the end
 
-    def display_clock(self, hours, minutes):
-        hww = [50, 22, 10]
-        x = 0
-        self.oled.fill_rect(30, 64 - hww[0], 4 * hww[1] + hww[2], hww[0], 0)
+        if len(city_name) > MAX_CITY_NAME_LENGTH:
+            city_name = city_name[: MAX_CITY_NAME_LENGTH - 3] + "..."
 
-        hours = hours % 12 if hours != 12 else 12
-        for it, t in enumerate(f"{hours: >2}{minutes:02}"):
-            if t != " ":
-                buffer = NUMS_502210[int(t)]
-                fb = framebuf.FrameBuffer(buffer, hww[1], hww[0], framebuf.MONO_HLSB)
-                self.oled.blit(fb, 30 + x, 64 - hww[0])
-            x = x + hww[1]
-            if it == 1:
-                buffer = NUMS_502210[-1]
-                fb = framebuf.FrameBuffer(buffer, hww[2], hww[0], framebuf.MONO_HLSB)
-                self.oled.blit(fb, 30 + x, 64 - hww[0])
-                x = x + hww[2]
-        self.oled.show()
+        return city_name
 
-    def display_home_clock(self, hours, minutes):
-        hww = [7, 6, 4]
-        hours_at_home = hours - 5
-        hours_at_home = hours % 24 if hours != 24 else 24
-        hours_elsewhere = hours_elsewhere + 2
-        hours_elsewhere = hours_elsewhere % 24 if hours_elsewhere != 24 else 24
-        x = 0
-        self.oled.fill_rect(
-            0, 64 - hww[0] * 2 - 2, 4 * hww[1] + hww[2], 2 * hww[0] + 2, 0
+    def display_clock(self, gps_time: datetime, draw: ImageDraw):
+        # Display the current time on the OLED display using a large font
+
+        font_to_use = self.large_font
+
+        time_to_display = gps_time.strftime(CLOCK_FORMAT)
+
+        # We want to put the text at bottom right of the display, so we need to calculate the x and y coordinates
+
+        # Get the bounding box of the display
+        bounding_box = self.oled.bounding_box
+        width = bounding_box[2] - bounding_box[0]
+        text_width = font_to_use.getsize(time_to_display)[0]
+        x = width - text_width
+
+        # get y
+        height = bounding_box[3] - bounding_box[1]
+        text_height = font_to_use.getsize(time_to_display)[1]
+        y = height - text_height
+
+        draw.text((x, y), time_to_display, fill="white", font=font_to_use)
+
+    def display_coordinates(self, lat, lon, draw: ImageDraw):
+        # Display the latitude and longitude on line 15
+
+        row = 15
+        lat_value = str(round(lat, 2))
+        lon_value = str(round(lon, 2))
+
+        draw.text(
+            (0, row), f"{lat_value}, {lon_value}", fill="white", font=self.xs_font
         )
-        for it, t in enumerate(f"{hours_elsewhere: >2}{MM:02}"):
-            if t != " ":
-                buffer = NUMS_764[int(t)]
-                fb = framebuf.FrameBuffer(buffer, hww[1], hww[0], framebuf.MONO_HLSB)
-                self.oled.blit(fb, x, 64 - hww[0])
-            x = x + hww[1]
-            if it == 1:
-                buffer = NUMS_764[-1]
-                fb = framebuf.FrameBuffer(buffer, hww[2], hww[0], framebuf.MONO_HLSB)
-                self.oled.blit(fb, x, 64 - hww[0])
-                x = x + hww[2]
-        x = 0
-        for it, t in enumerate(f"{hours_at_home: >2}{minutes:02}"):
-            if t != " ":
-                buffer = NUMS_764[int(t)]
-                fb = framebuf.FrameBuffer(buffer, hww[1], hww[0], framebuf.MONO_HLSB)
-                self.oled.blit(fb, x, 64 - hww[0] * 2 - 2)
-            x = x + hww[1]
-            if it == 1:
-                buffer = NUMS_764[-1]
-                fb = framebuf.FrameBuffer(buffer, hww[2], hww[0], framebuf.MONO_HLSB)
-                self.oled.blit(fb, x, 64 - hww[0] * 2 - 2)
-                x = x + hww[2]
-        self.oled.show()
-
-    def display_coordinates(self, lat, lon):
-        hww = [6, 4, 2]
-        for i, line in enumerate([str(lat), str(lon)]):
-            x = 0
-            line = line.replace("-", "")
-            self.oled.fill_rect(0, 64 - hww[0] * (6 - i) + i, 5 * hww[1], hww[0], 0)
-            for it, t in enumerate(line):
-                if t != ".":
-                    buffer = NUMS_642[int(t)]
-                    fb = framebuf.FrameBuffer(
-                        buffer, hww[1], hww[0], framebuf.MONO_HLSB
-                    )
-                    self.oled.blit(fb, x, 64 - (hww[0]) * (6 - i) + i)
-                    x = x + hww[1]
-                if it == 1:
-                    buffer = NUMS_642[-1]
-                    fb = framebuf.FrameBuffer(
-                        buffer, hww[2], hww[0], framebuf.MONO_HLSB
-                    )
-                    self.oled.blit(fb, x, 64 - (hww[0]) * (6 - i) + i)
-                    x = x + hww[2]
-        self.oled.show()
-
-    def display_gps_filler(self):
-        self.oled.fill_rect(0, 10, 28, 34, 0)
-        self.oled.show()
 
     def init_i2c(self):
-        i2c_dev = board.I2C()
+        i2c_dev = i2c(port=1, address=0x3C)
         return i2c_dev
 
     def cleanup(self):
-        pass
+        self.oled.clear()

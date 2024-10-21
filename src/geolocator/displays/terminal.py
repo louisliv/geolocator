@@ -1,11 +1,11 @@
 from datetime import datetime
 import curses
+from typing import Optional
 
 from pyfiglet import Figlet
-import pytz
 
 from geolocator.displays.base import Display
-from geolocator.gps_modules import GPSData
+from geolocator.gps_modules import GPSData, AltitudeData
 
 
 class TerminalDisplay(Display):
@@ -24,7 +24,8 @@ class TerminalDisplay(Display):
 
         self.city_window = curses.newwin(1, 50, 0, 0)
         self.time_window = curses.newwin(10, 150, 1, 15)
-        self.gps_window = curses.newwin(10, 10, 1, 0)
+        self.gps_window = curses.newwin(3, 10, 1, 0)
+        self.altitude_window = curses.newwin(1, 10, 5, 0)
 
     def render(self, gps_data: GPSData):
         self.write_city_data_to_terminal(gps_data.closest_city_name)
@@ -59,14 +60,20 @@ class TerminalDisplay(Display):
         self.gps_window.addstr(1, 0, f"{round(latitude, 4)}", curses.color_pair(2))
         self.gps_window.addstr(2, 0, f"{round(longitude, 4)}", curses.color_pair(2))
 
-        altitude = gps_data.altitude
-        altitude_units = gps_data.altitude_units
-
-        self.gps_window.addstr(
-            4, 0, f"{altitude} {altitude_units}", curses.color_pair(2)
-        )
-
         self.gps_window.refresh()
+
+    def render_altitude(self, altitude_data: AltitudeData):
+        self.write_altitude_to_terminal(altitude_data)
+
+    def write_altitude_to_terminal(self, altitude_data: AltitudeData):
+        # Write the altitude to the terminal using curses
+        altitude = altitude_data.altitude
+        altitude_units = altitude_data.altitude_units
+        self.altitude_window.clear()
+        self.altitude_window.addstr(
+            0, 0, f"{altitude} {altitude_units}", curses.color_pair(2)
+        )
+        self.altitude_window.refresh()
 
     def write_city_data_to_terminal(self, city: str):
         # Write the city data to the terminal using curses

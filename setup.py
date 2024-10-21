@@ -6,11 +6,8 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     package_data={
-        'geolocator': ['geolocator.db'],
+        'geolocator': ['geolocator.db', 'fonts/*'],
     },
-    data_files=[
-        ('', ['src/geolocator.db']),
-    ],
     include_package_data=True,
     install_requires=[
         'pyfiglet',
@@ -21,4 +18,9 @@ setup(
         'adafruit-circuitpython-ssd1306',
         'pynmea2',
     ],
+    entry_points={
+        'console_scripts': [
+            'geolocator=geolocator.cli:main',
+        ],
+    },
 )
