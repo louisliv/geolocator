@@ -1,4 +1,7 @@
-from geolocator.displays import get_display, Display
+import sys
+import argparse
+
+from geolocator.displays import get_display, Display, DisplayType
 
 from geolocator.gps_modules import get_gps_module
 
@@ -14,7 +17,22 @@ def run(display: Display):
 
 
 def main():
-    display = get_display()
+    # get the system arguments
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--display",
+        type=str,
+        help="The display type to use",
+        default=DisplayType.TERMINAL.value,
+        choices=[display_type.value for display_type in DisplayType]
+    )
+
+    args = parser.parse_args()
+
+    display_type = args.display
+
+    display = get_display(display_type=display_type)
 
     try:
         run(display)
