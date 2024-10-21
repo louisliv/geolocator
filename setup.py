@@ -13,10 +13,10 @@ setup(
         'pyfiglet',
         'SQLAlchemy',
         'pytz',
-        'Adafruit-SSD1306',
-        'adafruit-circuitpython-framebuf',
-        'adafruit-circuitpython-ssd1306',
+        'luma.oled',
+        'luma.core',
         'pynmea2',
+        'pyserial',
     ],
     entry_points={
         'console_scripts': [
