@@ -3,7 +3,7 @@ import pytz
 
 import requests
 
-from geolocator.gps_modules.base import GPSModule, GPSData, AltitudeData
+from geolocator.gps_modules.base import GPSModule, GPSCompleteData, AltitudeData
 
 FAKE_LAT = 37.7749
 FAKE_LNG = -122.4194
@@ -11,7 +11,7 @@ SQLITE_FILE = "geolocator.db"
 
 
 class FakeGPSModule(GPSModule):
-    def read(self) -> GPSData:
+    def read(self) -> GPSCompleteData:
         gps_data = self.retreive_fake_gps_data()
 
         latitude = gps_data["latitude"]
@@ -23,12 +23,14 @@ class FakeGPSModule(GPSModule):
         date_time_from_gps = datetime.fromtimestamp(gps_data["gps_time"], tz=timezone)
         timestamp = date_time_from_gps.strftime("%Y-%m-%d %H:%M:%S")
 
-        return GPSData(
+        return GPSCompleteData(
             latitude=latitude,
             longitude=longitude,
             gps_time=timestamp,
             closest_city_name=f"{current_city.name}, {current_city.state_id}",
             timestamp=gps_data["gps_time"],
+            altitude=gps_data["altitude"],
+            altitude_units=gps_data["altitude_units"],
         )
 
     def retreive_fake_gps_data(self):

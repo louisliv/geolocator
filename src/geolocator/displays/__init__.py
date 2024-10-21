@@ -1,4 +1,5 @@
 import enum
+import logging
 from typing import Optional
 
 from geolocator.displays.base import Display
@@ -8,6 +9,7 @@ class DisplayType(enum.Enum):
     TERMINAL = "terminal"
     SSD1306 = "ssd1306"
     WAVESHARE = "waveshare"
+    emulator = "emulator"
 
 
 def get_display(display_type: Optional[str] = DisplayType.TERMINAL.value) -> Display:
@@ -23,7 +25,12 @@ def get_display(display_type: Optional[str] = DisplayType.TERMINAL.value) -> Dis
             from geolocator.displays.waveshare import WaveshareDisplay
 
             return WaveshareDisplay()
+        elif display_type == DisplayType.emulator.value:
+            from geolocator.displays.emulator import EmulatorDisplay
+
+            return EmulatorDisplay()
     except:
+        logging.exception("Could not import the display. Falling back to TerminalDisplay")
         return TerminalDisplay()
 
     return TerminalDisplay()

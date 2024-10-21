@@ -20,7 +20,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'geolocator=geolocator.cli:main',
+            'geolocator=geolocator.main:main',
         ],
     },
 )

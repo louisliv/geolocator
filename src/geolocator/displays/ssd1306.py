@@ -39,7 +39,7 @@ class SSD1306Display(Display):
         # get y coordinate from the bounding box
         bounding_box = self.oled.bounding_box
         height = bounding_box[3] - bounding_box[1]
-        text_height = self.xs_font.getsize(data_to_display)[1]
+        text_height = self._get_text_size(data_to_display, self.xs_font)[1]
         y = height - text_height
 
         draw.text(
@@ -89,12 +89,12 @@ class SSD1306Display(Display):
         # Get the bounding box of the display
         bounding_box = self.oled.bounding_box
         width = bounding_box[2] - bounding_box[0]
-        text_width = font_to_use.getsize(time_to_display)[0]
+        text_width = self._get_text_size(time_to_display, font_to_use)[0]
         x = width - text_width
 
         # get y
         height = bounding_box[3] - bounding_box[1]
-        text_height = font_to_use.getsize(time_to_display)[1]
+        text_height = self._get_text_size(time_to_display, font_to_use)[1]
         y = height - text_height
 
         draw.text((x, y), time_to_display, fill="white", font=font_to_use)
@@ -109,6 +109,9 @@ class SSD1306Display(Display):
         draw.text(
             (0, row), f"{lat_value}, {lon_value}", fill="white", font=self.xs_font
         )
+
+    def _get_text_size(self, text: str, font: ImageFont) -> tuple:
+        return font.getsize(text)
 
     def init_i2c(self):
         i2c_dev = i2c(port=1, address=0x3C)

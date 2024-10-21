@@ -1,0 +1,11 @@
+[Unit]
+Description=Geolocator Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/geolocator --display=ssd1306 --gps=neo_6m
+User=root
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

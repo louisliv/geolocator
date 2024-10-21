@@ -1,4 +1,5 @@
 import enum
+import logging
 
 from geolocator.gps_modules.base import (
     GPSModule,
@@ -23,6 +24,7 @@ def get_gps_module(module_type: str = GPSModuleType.FAKE.value) -> GPSModule:
         if module_type == GPSModuleType.NEO_6M.value:
             return init_real_gps()
     except ImportError:
+        logging.error("Could not import serial. Falling back to FakeGPSModule")
         return init_fake_gps()
 
     return init_fake_gps()
