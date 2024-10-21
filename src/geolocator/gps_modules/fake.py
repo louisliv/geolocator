@@ -3,7 +3,7 @@ import pytz
 
 import requests
 
-from geolocator.gps_modules.base import GPSModule, GPSCompleteData, AltitudeData
+from geolocator.gps_modules.base import GPSModule, GPSCompleteData
 
 FAKE_LAT = 37.7749
 FAKE_LNG = -122.4194
@@ -56,4 +56,4 @@ class FakeGPSModule(GPSModule):
         }
 
     def get_altitude_data(self):
-        return AltitudeData(0.0, "m")
+        return self.read()

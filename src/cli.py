@@ -9,7 +9,7 @@ def run(display: Display, gps_module_type: str):
     gps_module = get_gps_module(module_type=gps_module_type)
 
     while True:
-        altitude_data = gps_module.read()
+        altitude_data = gps_module.get_altitude_data()
 
         if altitude_data:
             display.render(altitude_data)
