@@ -15,12 +15,13 @@ WIDTH = 128
 HEIGHT = 64
 SSD1306_ADDR = 0x3C
 FONT_FILE = "fonts/red_alert.ttf"
-FONT_FILE_PATH = Path(geolocator.__file__).parent / FONT_FILE
+GEOLOCATOR_PATH = Path(geolocator.__file__).parent
+FONT_FILE_PATH = GEOLOCATOR_PATH / FONT_FILE
 CLOCK_FORMAT = "%-I:%M"
 MAX_CITY_NAME_LENGTH = 17
 
 
-class SSD1306Display(Display):
+class OLEDDisplay(Display):
     def __init__(self):
         self.i2c_dev = self.init_i2c()
         self.oled: device = ssd1306(self.i2c_dev)
@@ -32,19 +33,16 @@ class SSD1306Display(Display):
     def render_altitude(self, altitude_data):
         pass
 
-    def display_altitude(self, altitude_data, draw: ImageDraw):
-        # Put the altitude data in the bottom left hand corner
+    def display_altitude(self, altitude_data: GPSCompleteData, draw: ImageDraw):
+        # Put the altitude data under the city name
         data_to_display = f"{altitude_data.altitude} {altitude_data.altitude_units}"
 
         # get y coordinate from the bounding box
-        bounding_box = self.oled.bounding_box
-        height = bounding_box[3] - bounding_box[1]
-        text_height = self._get_text_size(data_to_display, self.xs_font)[1]
-        y = height - text_height
+        y_start = 15
 
         draw.text(
-            (0, 15),
-            f"Alt: {altitude_data.altitude} {altitude_data.altitude_units}",
+            (0, y_start),
+            f"Alt: {data_to_display}",
             fill="white",
             font=self.xs_font,
         )
@@ -54,13 +52,9 @@ class SSD1306Display(Display):
 
         gps_datetime = datetime.strptime(gps_data.gps_time, "%Y-%m-%d %H:%M:%S")
 
-        gps_latitute = gps_data.latitude
-        gps_longitude = gps_data.longitude
-
         with canvas(self.oled) as draw:
             self.display_clock(gps_datetime, draw)
             self.display_city(closest_city, draw)
-            # self.display_coordinates(gps_latitute, gps_longitude, draw)
             self.display_altitude(gps_data, draw)
 
     def display_city(self, text: str, draw: ImageDraw):
@@ -85,8 +79,6 @@ class SSD1306Display(Display):
         time_to_display = gps_time.strftime(CLOCK_FORMAT)
 
         # We want to put the text at bottom right of the display, so we need to calculate the x and y coordinates
-
-        # Get the bounding box of the display
         bounding_box = self.oled.bounding_box
         width = bounding_box[2] - bounding_box[0]
         text_width = self._get_text_size(time_to_display, font_to_use)[0]
@@ -99,22 +91,11 @@ class SSD1306Display(Display):
 
         draw.text((x, y), time_to_display, fill="white", font=font_to_use)
 
-    def display_coordinates(self, lat, lon, draw: ImageDraw):
-        # Display the latitude and longitude on line 15
-
-        row = 15
-        lat_value = str(round(lat, 2))
-        lon_value = str(round(lon, 2))
-
-        draw.text(
-            (0, row), f"{lat_value}, {lon_value}", fill="white", font=self.xs_font
-        )
-
     def _get_text_size(self, text: str, font: ImageFont) -> tuple:
         return font.getsize(text)
 
     def init_i2c(self):
-        i2c_dev = i2c(port=1, address=0x3C)
+        i2c_dev = i2c(port=1, address=SSD1306_ADDR)
         return i2c_dev
 
     def cleanup(self):

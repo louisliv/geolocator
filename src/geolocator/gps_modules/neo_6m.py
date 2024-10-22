@@ -15,7 +15,7 @@ from pynmea2 import GGA, RMC
 from geolocator.gps_modules.base import GPSModule, GPSData, GPSCompleteData
 from geolocator.displays.utils import file_logger
 
-DEV_PORT = "/dev/ttyACM0"
+DEV_PORT = "/dev/ttyUSB0"
 
 
 class Neo6MGPSModule(GPSModule):
@@ -32,23 +32,15 @@ class Neo6MGPSModule(GPSModule):
     def get_altitude_data(self):
         new_data = self.ser.readline().decode()
 
-        if new_data and new_data[0:6] == "$GPGGA":
+        if new_data and (new_data[0:6] == "$GPGGA" or new_data[0:6] == "$GNGGA"):
             return self._handle_gga_data(new_data)
 
-    def _handle_rmc_data(self, rmc_data) -> Optional[GPSData]:
-        try:
-            new_msg: RMC = pynmea2.parse(rmc_data)
-        except:
-            return None
-
-        if not new_msg:
-            return None
-
-        lat = new_msg.latitude
-        lng = new_msg.longitude
+    def _parse_gps_data(self, data) -> Optional[GPSData]:
+        lat = data.latitude
+        lng = data.longitude
 
         current_city = self.get_current_city(lat, lng)
-        timestamp_epoch: time = new_msg.timestamp  # this is a UTC time object
+        timestamp_epoch: time = data.timestamp  # this is a UTC time object
 
         timezone = pytz.timezone(current_city.timezone)
 
@@ -69,6 +61,19 @@ class Neo6MGPSModule(GPSModule):
             timestamp=timestamp_epoch,
         )
 
+    def _handle_rmc_data(self, rmc_data) -> Optional[GPSData]:
+        try:
+            new_msg: RMC = pynmea2.parse(rmc_data)
+        except:
+            return None
+
+        if not new_msg:
+            return None
+
+        gps_data = self._parse_gps_data(new_msg)
+
+        return gps_data
+
     def _handle_gga_data(self, gga_data) -> Optional[GPSCompleteData]:
         try:
             new_msg: GGA = pynmea2.parse(gga_data)
@@ -81,29 +86,14 @@ class Neo6MGPSModule(GPSModule):
         altitude = new_msg.altitude
         altitude_units = new_msg.altitude_units
 
-        lat = new_msg.latitude
-        lng = new_msg.longitude
-
-        current_city = self.get_current_city(lat, lng)
-        timestamp_epoch: time = new_msg.timestamp  # this is a UTC time object
-
-        timezone = pytz.timezone(current_city.timezone)
-
-        # convert the utc time to the local time
-        utc_datetime = datetime.combine(
-            datetime.today(), timestamp_epoch, tzinfo=pytz.utc
-        )
-        epoch = utc_datetime.timestamp()
-        timestamp = datetime.fromtimestamp(epoch, timezone).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        gps_data = self._parse_gps_data(new_msg)
 
         return GPSCompleteData(
-            latitude=lat,
-            longitude=lng,
-            gps_time=timestamp,
-            closest_city_name=f"{current_city.name}, {current_city.state_id}",
-            timestamp=timestamp_epoch,
+            latitude=gps_data.latitude,
+            longitude=gps_data.longitude,
+            gps_time=gps_data.gps_time,
+            closest_city_name=gps_data.closest_city_name,
+            timestamp=gps_data.timestamp,
             altitude=altitude,
             altitude_units=altitude_units,
         )

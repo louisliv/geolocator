@@ -3,7 +3,7 @@ from pathlib import Path
 from luma.emulator.device import pygame
 from PIL import ImageFont
 
-from geolocator.displays.ssd1306 import SSD1306Display
+from geolocator.displays.oled import OLEDDisplay
 import geolocator
 
 WIDTH = 128
@@ -14,7 +14,7 @@ FONT_FILE_PATH = Path(geolocator.__file__).parent / FONT_FILE
 MAX_CITY_NAME_LENGTH = 17
 
 
-class EmulatorDisplay(SSD1306Display):
+class EmulatorDisplay(OLEDDisplay):
     def __init__(self):
         self.oled = pygame(WIDTH, HEIGHT)
         self.large_font = ImageFont.truetype(str(FONT_FILE_PATH), 48)

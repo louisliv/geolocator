@@ -18,9 +18,9 @@ def get_display(display_type: Optional[str] = DisplayType.TERMINAL.value) -> Dis
 
     try:
         if display_type == DisplayType.SSD1306.value:
-            from geolocator.displays.ssd1306 import SSD1306Display
+            from geolocator.displays.oled import OLEDDisplay
 
-            return SSD1306Display()
+            return OLEDDisplay()
         elif display_type == DisplayType.WAVESHARE.value:
             from geolocator.displays.waveshare import WaveshareDisplay
 
