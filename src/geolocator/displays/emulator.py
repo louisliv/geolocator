@@ -15,17 +15,16 @@ MAX_CITY_NAME_LENGTH = 17
 
 
 class EmulatorDisplay(OLEDDisplay):
-    def __init__(self):
-        self.oled = pygame(WIDTH, HEIGHT)
-        self.large_font = ImageFont.truetype(str(FONT_FILE_PATH), 48)
-        self.small_font = ImageFont.truetype(str(FONT_FILE_PATH), 18)
-        self.xs_font = ImageFont.truetype(str(FONT_FILE_PATH), 12)
-        self.time_with_seconds_font = ImageFont.truetype(str(FONT_FILE_PATH), 36)
-
     def _get_text_size(self, text, font: ImageFont.FreeTypeFont):
         text_size = font.getbbox(text)
 
         return (text_size[2], text_size[3])
+
+    def init_interface(self):
+        return None
+
+    def init_device(self, _device_type):
+        return pygame(WIDTH, HEIGHT)
 
     def cleanup(self):
         pass

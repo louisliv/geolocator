@@ -1,8 +1,10 @@
+from typing import Optional
 from datetime import datetime
 from pathlib import Path
+import enum
 
 from luma.core.interface.serial import i2c
-from luma.oled.device import ssd1306, device
+from luma.oled.device import ssd1309, sh1106, ssd1306, device
 from luma.core.render import canvas, ImageDraw
 
 from PIL import ImageFont
@@ -21,10 +23,23 @@ CLOCK_FORMAT = "%-I:%M"
 MAX_CITY_NAME_LENGTH = 17
 
 
+DEVICE_FUNCTIONS = {
+    "ssd1306": ssd1306,
+    "ssd1309": ssd1309,
+    "sh1106": sh1106,
+}
+
+
+class Devices(enum.Enum):
+    SSD1306 = "ssd1306"
+    SSD1309 = "ssd1309"
+    SH1106 = "sh1106"
+
+
 class OLEDDisplay(Display):
-    def __init__(self):
-        self.i2c_dev = self.init_i2c()
-        self.oled: device = ssd1306(self.i2c_dev)
+    def __init__(self, device_type: Optional[Devices] = Devices.SSD1306):
+        self.interface = self.init_interface()
+        self.oled: device = self.init_device(device_type)
         self.large_font = ImageFont.truetype(str(FONT_FILE_PATH), 48)
         self.small_font = ImageFont.truetype(str(FONT_FILE_PATH), 18)
         self.xs_font = ImageFont.truetype(str(FONT_FILE_PATH), 12)
@@ -94,9 +109,18 @@ class OLEDDisplay(Display):
     def _get_text_size(self, text: str, font: ImageFont) -> tuple:
         return font.getsize(text)
 
-    def init_i2c(self):
-        i2c_dev = i2c(port=1, address=SSD1306_ADDR)
-        return i2c_dev
+    def init_interface(self):
+        interface = i2c(port=1, address=SSD1306_ADDR)
+        return interface
+
+    def init_device(self, device_type: str = Devices.SSD1306.value):
+        # match the device type to the function and return the device
+        device_function = DEVICE_FUNCTIONS.get(device_type.value)
+
+        if not device_function:
+            raise ValueError(f"Invalid device type: {device_type}")
+
+        return device_function(self.interface)
 
     def cleanup(self):
         self.oled.clear()
