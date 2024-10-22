@@ -7,9 +7,9 @@ from geolocator.displays.base import Display
 
 class DisplayType(enum.Enum):
     TERMINAL = "terminal"
-    SSD1306 = "ssd1306"
+    OLED = "oled"
     WAVESHARE = "waveshare"
-    emulator = "emulator"
+    EMULATOR = "emulator"
 
 
 def get_display(display_type: Optional[str] = DisplayType.TERMINAL.value) -> Display:
@@ -17,15 +17,11 @@ def get_display(display_type: Optional[str] = DisplayType.TERMINAL.value) -> Dis
     from geolocator.displays.terminal import TerminalDisplay
 
     try:
-        if display_type == DisplayType.SSD1306.value:
+        if display_type == DisplayType.OLED.value:
             from geolocator.displays.oled import OLEDDisplay
 
             return OLEDDisplay()
-        elif display_type == DisplayType.WAVESHARE.value:
-            from geolocator.displays.waveshare import WaveshareDisplay
-
-            return WaveshareDisplay()
-        elif display_type == DisplayType.emulator.value:
+        elif display_type == DisplayType.EMULATOR.value:
             from geolocator.displays.emulator import EmulatorDisplay
 
             return EmulatorDisplay()

@@ -23,7 +23,7 @@ def main():
         "--display",
         type=str,
         help="The display type to use",
-        default=DisplayType.TERMINAL.value,
+        default=DisplayType.EMULATOR.value,
         choices=[display_type.value for display_type in DisplayType],
     )
 
