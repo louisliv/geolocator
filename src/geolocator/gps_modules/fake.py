@@ -34,9 +34,12 @@ class FakeGPSModule(GPSModule):
         )
 
     def retreive_fake_gps_data(self):
-        response = requests.get("http://localhost:5000/get_geo_data")
+        try:
+            response = requests.get("http://localhost:5000/get_geo_data")
 
-        data = response.json()
+            data = response.json()
+        except:
+            data = None
 
         if not data:
             return {
