@@ -1,16 +1,30 @@
 from datetime import datetime
+from random import randint
 import pytz
 
 import requests
 
 from geolocator.gps_modules.base import GPSModule, GPSCompleteData
+from geolocator.client import get_sql_engine
+from geolocator.models.city import City
 
-FAKE_LAT = 37.7749
-FAKE_LNG = -122.4194
+from sqlalchemy.orm import Session
+
 SQLITE_FILE = "geolocator.db"
+
+# Atlanta, GA
+FAKE_LAT = 33.7490
+FAKE_LNG = -84.3880
 
 
 class FakeGPSModule(GPSModule):
+    def __init__(self, randomize=False):
+        self.random_city_used_count = 0
+        self.random_city = None
+        self.randomize = randomize
+
+        super().__init__()
+
     def read(self) -> GPSCompleteData:
         gps_data = self.retreive_fake_gps_data()
 
@@ -42,12 +56,20 @@ class FakeGPSModule(GPSModule):
             data = None
 
         if not data:
+            if (
+                not self.random_city or self.random_city_used_count == 200
+            ) and self.randomize:
+                self.random_city = self.get_random_city()
+                self.random_city_used_count = 0
+
+            self.random_city_used_count += 1
+
             return {
-                "latitude": FAKE_LAT,
-                "longitude": FAKE_LNG,
-                "altitude": 0.0,
+                "latitude": self.random_city.lat if self.randomize else FAKE_LAT,
+                "longitude": self.random_city.lng if self.randomize else FAKE_LNG,
+                "altitude": 100,
                 "altitude_units": "m",
-                "gps_time": datetime.now().timestamp(),
+                "gps_time": datetime.now(pytz.utc).timestamp(),
             }
 
         return {
@@ -60,3 +82,15 @@ class FakeGPSModule(GPSModule):
 
     def get_altitude_data(self):
         return self.read()
+
+    def get_random_city(self):
+        engine = get_sql_engine()
+        with Session(engine) as session:
+            # get all cities
+            cities = session.query(City).all()
+
+            cities_count = len(cities)
+
+            random_index = randint(0, cities_count - 1)
+
+            return cities[random_index]
