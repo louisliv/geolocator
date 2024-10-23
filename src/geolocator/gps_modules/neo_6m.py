@@ -70,6 +70,10 @@ class Neo6MGPSModule(GPSModule):
         if not new_msg:
             return None
 
+        # check if the gps data is reliable
+        if not self._check_land_speed(new_msg.spd_over_grnd):
+            return None
+
         gps_data = self._parse_gps_data(new_msg)
 
         return gps_data
@@ -81,6 +85,10 @@ class Neo6MGPSModule(GPSModule):
             return None
 
         if not new_msg:
+            return None
+
+        # check if the gps data is reliable
+        if not self._check_hdop_data(new_msg.horizontal_dil):
             return None
 
         altitude = new_msg.altitude
@@ -97,3 +105,45 @@ class Neo6MGPSModule(GPSModule):
             altitude=altitude,
             altitude_units=altitude_units,
         )
+
+    def _check_hdop_data(self, hdop) -> bool:
+        """Horizonal Dilution of Precision (HDOP) is a measure of the
+        precision of the GPS data. If the value is greater than 5, the
+        gps data is not reliable and should be discarded.
+
+        Args:
+            hdop (str): The HDOP value from the GPS data
+
+        Returns:
+            bool: True if the HDOP value is less than 5, False otherwise
+        """
+        try:
+            hdop = float(hdop)
+        except:
+            return False
+
+        if hdop > 5:
+            return False
+
+        return True
+
+    def _check_land_speed(self, speed) -> bool:
+        """Check if the land speed is greater than 200 knots. If it is,
+        the data is not reliable and should be discarded.
+
+        Args:
+            speed (str): The land speed from the GPS data (in knots)
+
+        Returns:
+            bool: True if the land speed is less than 200 knots, False otherwise
+        """
+
+        try:
+            speed = float(speed)
+        except:
+            return False
+
+        if speed > 200:
+            return False
+
+        return True
