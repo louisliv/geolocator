@@ -23,10 +23,49 @@ CLOCK_FORMAT = "%-I:%M"
 MAX_CITY_NAME_LENGTH = 17
 
 
+class SH1106Device(sh1106):
+    def display(self, image):
+        """
+        Takes a 1-bit :py:mod:`PIL.Image` and dumps it to the SH1106
+        OLED display.
+
+        :param image: Image to display.
+        :type image: :py:mod:`PIL.Image`
+        """
+        assert image.mode == self.mode
+        assert image.size == self.size
+
+        image = self.preprocess(image)
+
+        set_page_address = 0xB0
+        image_data = image.getdata()
+        pixels_per_page = self.width * 8
+        buf = bytearray(self.width)
+
+        for y in range(0, int(self._pages * pixels_per_page), pixels_per_page):
+            self.command(set_page_address, 0x00, 0x10) # Only difference is the 0x00 here
+            set_page_address += 1
+            offsets = [y + self.width * i for i in range(8)]
+
+            for x in range(self.width):
+                buf[x] = (
+                    (image_data[x + offsets[0]] and 0x01)
+                    | (image_data[x + offsets[1]] and 0x02)
+                    | (image_data[x + offsets[2]] and 0x04)
+                    | (image_data[x + offsets[3]] and 0x08)
+                    | (image_data[x + offsets[4]] and 0x10)
+                    | (image_data[x + offsets[5]] and 0x20)
+                    | (image_data[x + offsets[6]] and 0x40)
+                    | (image_data[x + offsets[7]] and 0x80)
+                )
+
+            self.data(list(buf))
+
+
 DEVICE_FUNCTIONS = {
     "ssd1306": ssd1306,
     "ssd1309": ssd1309,
-    "sh1106": sh1106,
+    "sh1106": SH1106Device,
 }
 
 
@@ -37,13 +76,14 @@ class Devices(enum.Enum):
 
 
 class OLEDDisplay(Display):
-    def __init__(self, device_type: Optional[Devices] = Devices.SSD1306):
+    def __init__(self, device_type: Optional[Devices] = Devices.SH1106):
         self.interface = self.init_interface()
         self.oled: device = self.init_device(device_type)
         self.large_font = ImageFont.truetype(str(FONT_FILE_PATH), 48)
         self.small_font = ImageFont.truetype(str(FONT_FILE_PATH), 18)
         self.xs_font = ImageFont.truetype(str(FONT_FILE_PATH), 12)
         self.time_with_seconds_font = ImageFont.truetype(str(FONT_FILE_PATH), 36)
+        self.oled.clear()
 
     def render_altitude(self, altitude_data):
         pass

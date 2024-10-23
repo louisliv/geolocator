@@ -3,7 +3,7 @@ Description=Geolocator Service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/geolocator --display=ssd1306 --gps=neo_6m
+ExecStart=/usr/local/bin/geolocator --display=oled --gps=neo_6m
 User=root
 Restart=always
 
