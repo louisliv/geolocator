@@ -1,4 +1,5 @@
 import argparse
+import time
 
 from geolocator.displays import get_display, Display, DisplayType
 
@@ -8,10 +9,19 @@ from geolocator.gps_modules import get_gps_module, GPSModuleType
 def run(display: Display, gps_module_type: str):
     gps_module = get_gps_module(module_type=gps_module_type)
 
+    display.startup_screen()
+
+    time.sleep(3)
+
+    display_count = 0
+
     while True:
         altitude_data = gps_module.get_altitude_data()
 
         if altitude_data:
+            if display_count == 0:
+                display.cleanup()
+                display_count += 1
             display.render(altitude_data)
 
 

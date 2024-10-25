@@ -24,7 +24,7 @@ class EmulatorDisplay(OLEDDisplay):
         return None
 
     def init_device(self, _device_type):
-        return pygame(WIDTH, HEIGHT)
+        return pygame(WIDTH, HEIGHT, mode="1")
 
     def cleanup(self):
         pass

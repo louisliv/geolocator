@@ -4,3 +4,4 @@ build
 dist
 *.egg-info
 *.tar.xz
+src/geolocator/images/*.png

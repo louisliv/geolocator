@@ -2,12 +2,13 @@ from typing import Optional
 from datetime import datetime
 from pathlib import Path
 import enum
+import logging
 
 from luma.core.interface.serial import i2c
 from luma.oled.device import ssd1309, sh1106, ssd1306, device
 from luma.core.render import canvas, ImageDraw
 
-from PIL import ImageFont
+from PIL import ImageFont, Image
 
 from geolocator.gps_modules import GPSCompleteData
 from geolocator.displays.base import Display
@@ -17,7 +18,9 @@ WIDTH = 128
 HEIGHT = 64
 SSD1306_ADDR = 0x3C
 FONT_FILE = "fonts/red_alert.ttf"
+STARTUP_SCREEN_FILE = "images/startup_screen.png"
 GEOLOCATOR_PATH = Path(geolocator.__file__).parent
+STARTUP_SCREEN_PATH = GEOLOCATOR_PATH / STARTUP_SCREEN_FILE
 FONT_FILE_PATH = GEOLOCATOR_PATH / FONT_FILE
 CLOCK_FORMAT = "%-I:%M"
 MAX_CITY_NAME_LENGTH = 17
@@ -43,7 +46,9 @@ class SH1106Device(sh1106):
         buf = bytearray(self.width)
 
         for y in range(0, int(self._pages * pixels_per_page), pixels_per_page):
-            self.command(set_page_address, 0x00, 0x10) # Only difference is the 0x00 here
+            self.command(
+                set_page_address, 0x00, 0x10
+            )  # Only difference is the 0x00 here
             set_page_address += 1
             offsets = [y + self.width * i for i in range(8)]
 
@@ -164,3 +169,23 @@ class OLEDDisplay(Display):
 
     def cleanup(self):
         self.oled.clear()
+
+    def startup_screen(self):
+        """Display the startup animation on the OLED display"""
+
+        self.oled.clear()
+
+        img_path = str(STARTUP_SCREEN_PATH)
+
+        try:
+            startup_screen = Image.open(img_path)
+        except FileNotFoundError:
+            logging.warning(f"Startup screen image not found at {img_path}")
+
+        # We need to resize the image to fit the OLED display
+        startup_screen = startup_screen.resize(
+            (self.oled.width, self.oled.height)
+        ).convert(self.oled.mode)
+
+        # Display the image on the OLED display
+        self.oled.display(startup_screen)

@@ -6,7 +6,7 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     package_data={
-        'geolocator': ['geolocator.db', 'fonts/*'],
+        'geolocator': ['geolocator.db', 'fonts/*', 'images/*'],
     },
     include_package_data=True,
     install_requires=[
