@@ -1,66 +1,8 @@
-import argparse
-import time
-
-from geolocator.displays import get_display, Display, DisplayType
-
-from geolocator.gps_modules import get_gps_module, GPSModuleType
-
-
-def run(display: Display, gps_module_type: str):
-    gps_module = get_gps_module(module_type=gps_module_type)
-
-    display.startup_screen()
-
-    time.sleep(3)
-
-    display_count = 0
-
-    time.sleep(5)
-
-    while True:
-        altitude_data = gps_module.get_altitude_data()
-
-        if altitude_data:
-            if display_count == 0:
-                display.cleanup()
-                display_count += 1
-
-            display.render(altitude_data)
+from geolocator.runner import cli
 
 
 def main():
-    # get the system arguments
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--display",
-        type=str,
-        help="The display type to use",
-        default=DisplayType.TERMINAL.value,
-        choices=[display_type.value for display_type in DisplayType],
-    )
-
-    parser.add_argument(
-        "--gps",
-        type=str,
-        help="The GPS module to use",
-        default=GPSModuleType.FAKE.value,
-        choices=[gps_type.value for gps_type in GPSModuleType],
-    )
-
-    args = parser.parse_args()
-
-    display_type = args.display
-
-    gps_type = args.gps
-
-    display = get_display(display_type=display_type)
-
-    try:
-        run(display, gps_type)
-        display.cleanup()
-    finally:
-        display.cleanup()
+    cli()
 
 
 if __name__ == "__main__":
