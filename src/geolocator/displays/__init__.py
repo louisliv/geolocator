@@ -13,7 +13,14 @@ class DisplayType(enum.Enum):
 
 
 def get_display(display_type: Optional[str] = DisplayType.TERMINAL.value) -> Display:
-    # Return the appropriate display based on the environment
+    """Return the display object based on the display type
+
+    Args:
+        display_type (Optional[str], optional): The display type. Defaults to DisplayType.TERMINAL.value.
+
+    Returns:
+        Display: The display object
+    """
     from geolocator.displays.terminal import TerminalDisplay
 
     try:

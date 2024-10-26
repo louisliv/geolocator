@@ -3,13 +3,20 @@ from geolocator.gps_modules import GPSData, AltitudeData
 
 class Display:
     def render(self, gps_data: GPSData):
-        raise NotImplementedError
+        """Render the GPS data on the display.
 
-    def render_altitude(self, altitude_data: AltitudeData):
+        Args:
+            gps_data (GPSData): The GPS data to render on the display
+
+        Raises:
+            NotImplementedError: This method must be implemented by the subclass
+        """
         raise NotImplementedError
 
     def cleanup(self):
-        raise NotImplementedError
+        """Cleanup the display. This method is optional and can be implemented by the subclass."""
+        pass
 
     def startup_screen(self):
+        """Display the startup screen. This method is optional and can be implemented by the subclass."""
         pass

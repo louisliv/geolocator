@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from datetime import datetime
 from pathlib import Path
 import enum
@@ -90,10 +90,29 @@ class OLEDDisplay(Display):
         self.time_with_seconds_font = ImageFont.truetype(str(FONT_FILE_PATH), 36)
         self.oled.clear()
 
-    def render_altitude(self, altitude_data):
-        pass
+    def render(self, gps_data: GPSCompleteData, time_to_show: datetime = None):
+        """Display the GPS data on the OLED display. This includes the city name, current time, and altitude data.
+
+        Args:
+            gps_data (GPSCompleteData): The GPS data to display
+            time_to_show (datetime, optional): The time to display. Defaults to None. If None, the current time will be used.
+        """
+        closest_city = gps_data.closest_city_name
+
+        time_to_show = time_to_show or datetime.now()
+
+        with canvas(self.oled) as draw:
+            self.display_clock(time_to_show, draw)
+            self.display_city(closest_city, draw)
+            self.display_altitude(gps_data, draw)
 
     def display_altitude(self, altitude_data: GPSCompleteData, draw: ImageDraw):
+        """Display the altitude data on the OLED display.
+
+        Args:
+            altitude_data (GPSCompleteData): The GPS data containing the altitude data
+            draw (ImageDraw): The ImageDraw object to draw on the OLED display
+        """
         # Put the altitude data under the city name
         data_to_display = f"{altitude_data.altitude} {altitude_data.altitude_units}"
 
@@ -107,32 +126,39 @@ class OLEDDisplay(Display):
             font=self.xs_font,
         )
 
-    def render(self, gps_data: GPSCompleteData, time_to_show: datetime = None):
-        closest_city = gps_data.closest_city_name
-
-        time_to_show = time_to_show or datetime.now()
-
-        with canvas(self.oled) as draw:
-            self.display_clock(time_to_show, draw)
-            self.display_city(closest_city, draw)
-            self.display_altitude(gps_data, draw)
-
     def display_city(self, text: str, draw: ImageDraw):
+        """Display the city name on the OLED display.
+
+        Args:
+            text (str): The city name to display
+            draw (ImageDraw): The ImageDraw object to draw on the OLED display
+        """
         # Display the city name on the first line of the OLED display
         city_name = self._format_city_name(text)
         draw.text((0, 0), city_name, fill="white", font=self.small_font)
 
     def _format_city_name(self, city_name: str) -> str:
-        # Format the city name to fit on the OLED display. If the city name is too long, we will truncate it
-        # and add an ellipsis at the end
+        """Format the city name to fit on the OLED display. If the city name is too long, we will truncate it
+        and add an ellipsis at the end.
 
+        Args:
+            city_name (str): The city name to format
+
+        Returns:
+            str: The formatted city name
+        """
         if len(city_name) > MAX_CITY_NAME_LENGTH:
             city_name = city_name[: MAX_CITY_NAME_LENGTH - 3] + "..."
 
         return city_name
 
     def display_clock(self, time_to_show: datetime, draw: ImageDraw):
-        # Display the current time on the OLED display using a large font
+        """Display the current time on the OLED display using the large font.
+
+        Args:
+            time_to_show (datetime): The time to display
+            draw (ImageDraw): The ImageDraw object to draw on the OLED display
+        """
 
         font_to_use = self.large_font
 
@@ -151,14 +177,39 @@ class OLEDDisplay(Display):
 
         draw.text((x, y), time_to_display, fill="white", font=font_to_use)
 
-    def _get_text_size(self, text: str, font: ImageFont) -> tuple:
+    def _get_text_size(self, text: str, font: ImageFont) -> Tuple[int, int]:
+        """Get the size of the text based on the font.
+
+        Args:
+            text (str): The text to get the size of
+            font (ImageFont): The font to use for the text
+
+        Returns:
+            Tuple[int, int]: The size of the text as a tuple of width and height
+        """
         return font.getsize(text)
 
     def init_interface(self):
+        """Initialize the interface for the OLED display. This is specific to the display type.
+
+        Returns:
+            i2c: The I2C interface for the OLED display
+        """
         interface = i2c(port=1, address=SSD1306_ADDR)
         return interface
 
     def init_device(self, device_type: str = Devices.SSD1306.value):
+        """Initialize the device for the OLED display. This is specific to the display type.
+
+        Args:
+            device_type (str, optional): The device type to initialize. Defaults to Devices.SSD1306.value.
+
+        Raises:
+            ValueError: If an invalid device type is provided
+
+        Returns:
+            The specific device for the OLED display based on the device type provided.
+        """
         # match the device type to the function and return the device
         device_function = DEVICE_FUNCTIONS.get(device_type.value)
 
@@ -168,6 +219,7 @@ class OLEDDisplay(Display):
         return device_function(self.interface)
 
     def cleanup(self):
+        """Clear the OLED display."""
         self.oled.clear()
 
     def startup_screen(self):

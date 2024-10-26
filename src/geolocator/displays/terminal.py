@@ -28,11 +28,17 @@ class TerminalDisplay(Display):
         self.altitude_window = curses.newwin(1, 10, 5, 0)
 
     def render(self, gps_data: GPSData):
+        """Render the GPS data on the terminal. This includes the city name, current time, gps coordinates, and altitude data."""
         self.write_city_data_to_terminal(gps_data.closest_city_name)
         self.write_time_to_terminal(gps_data.gps_time)
         self.write_gps_data_to_terminal(gps_data)
 
     def write_time_to_terminal(self, gps_time: str):
+        """Write the time to the terminal using curses.
+
+        Args:
+            gps_time (str): The GPS time in the format "YYYY-MM-DD HH:MM:SS"
+        """
         self.time_window.clear()
         # Write the time in HH:MM:SS format to the terminal using curses
 
@@ -53,7 +59,11 @@ class TerminalDisplay(Display):
         self.time_window.refresh()
 
     def write_gps_data_to_terminal(self, gps_data: GPSData):
-        # Write the latitude and longitude to the terminal using curses
+        """Write the latitude and longitude to the terminal using curses
+
+        Args:
+            gps_data (GPSData): The GPS data containing the latitude and longitude
+        """
         latitude = gps_data.latitude
         longitude = gps_data.longitude
         self.gps_window.clear()
@@ -62,11 +72,12 @@ class TerminalDisplay(Display):
 
         self.gps_window.refresh()
 
-    def render_altitude(self, altitude_data: AltitudeData):
-        self.write_altitude_to_terminal(altitude_data)
-
     def write_altitude_to_terminal(self, altitude_data: AltitudeData):
-        # Write the altitude to the terminal using curses
+        """Write the altitude to the terminal using curses
+
+        Args:
+            altitude_data (AltitudeData): The altitude data to display
+        """
         altitude = altitude_data.altitude
         altitude_units = altitude_data.altitude_units
         self.altitude_window.clear()
@@ -76,12 +87,17 @@ class TerminalDisplay(Display):
         self.altitude_window.refresh()
 
     def write_city_data_to_terminal(self, city: str):
-        # Write the city data to the terminal using curses
+        """Write the city data to the terminal using curses
+
+        Args:
+            city (str): The city name to display
+        """
         self.city_window.clear()
         self.city_window.addstr(0, 0, city, curses.color_pair(1))
         self.city_window.refresh()
 
     def cleanup(self):
+        """Cleanup the terminal display"""
         self.stdscr.keypad(0)
         curses.echo()
         curses.nocbreak()
