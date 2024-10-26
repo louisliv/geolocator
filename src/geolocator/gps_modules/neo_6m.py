@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from typing import Optional
+from typing import Optional, Union
 
 import pytz
 
@@ -23,18 +23,36 @@ class Neo6MGPSModule(GPSModule):
         self.nmea_stream_reader = pynmea2.NMEAStreamReader()
 
     def read(self) -> Optional[GPSData]:
+        """Read the GPS data from the NEO-6M GPS module.
+
+        Returns:
+            Optional[GPSData]: The GPS data read from the NEO-6M GPS module. Returns None if the data is not reliable.
+        """
         new_data = self.ser.readline().decode()
 
         if new_data and new_data[0:6] == "$GPRMC":
             return self._handle_rmc_data(new_data)
 
-    def get_altitude_data(self):
+    def get_altitude_data(self) -> Optional[GPSCompleteData]:
+        """Get the GPS data from the NEO-6M GPS module, including altitude data.
+
+        Returns:
+            Optional[GPSCompleteData]: The GPS data read from the NEO-6M GPS module. Returns None if the data is not reliable.
+        """
         new_data = self.ser.readline().decode()
 
         if new_data and (new_data[0:6] == "$GPGGA" or new_data[0:6] == "$GNGGA"):
             return self._handle_gga_data(new_data)
 
-    def _parse_gps_data(self, data) -> Optional[GPSData]:
+    def _parse_gps_data(self, data: Union[RMC, GGA]) -> Optional[GPSData]:
+        """Parse the GPS data from the NEO-6M GPS module.
+
+        Args:
+            data (Union[RMC, GGA]): The GPS data to parse
+
+        Returns:
+            Optional[GPSData]: The parsed GPS data
+        """
         lat = data.latitude
         lng = data.longitude
 
@@ -62,7 +80,15 @@ class Neo6MGPSModule(GPSModule):
             timestamp=timestamp_epoch,
         )
 
-    def _handle_rmc_data(self, rmc_data) -> Optional[GPSData]:
+    def _handle_rmc_data(self, rmc_data: str) -> Optional[GPSData]:
+        """Handle the RMC data from the NEO-6M GPS module.
+
+        Args:
+            rmc_data (str): The NMEA sentence containing the RMC data
+
+        Returns:
+            Optional[GPSData]: The GPS data parsed from the RMC data. Returns None if the data cannot be parsed.
+        """
         try:
             new_msg: RMC = pynmea2.parse(rmc_data)
         except:
@@ -79,7 +105,15 @@ class Neo6MGPSModule(GPSModule):
 
         return gps_data
 
-    def _handle_gga_data(self, gga_data) -> Optional[GPSCompleteData]:
+    def _handle_gga_data(self, gga_data: str) -> Optional[GPSCompleteData]:
+        """Handle the GGA data from the NEO-6M GPS module.
+
+        Args:
+            gga_data (str): The NMEA sentence containing the GGA data
+
+        Returns:
+            Optional[GPSCompleteData]: The GPS data parsed from the GGA data. Returns None if the data cannot be parsed.
+        """
         try:
             new_msg: GGA = pynmea2.parse(gga_data)
         except:

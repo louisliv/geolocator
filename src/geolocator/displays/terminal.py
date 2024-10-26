@@ -5,7 +5,7 @@ from typing import Optional
 from pyfiglet import Figlet
 
 from geolocator.displays.base import Display
-from geolocator.gps_modules import GPSData, AltitudeData
+from geolocator.gps_modules import GPSData, GPSCompleteData
 
 
 class TerminalDisplay(Display):
@@ -72,11 +72,11 @@ class TerminalDisplay(Display):
 
         self.gps_window.refresh()
 
-    def write_altitude_to_terminal(self, altitude_data: AltitudeData):
+    def write_altitude_to_terminal(self, altitude_data: GPSCompleteData):
         """Write the altitude to the terminal using curses
 
         Args:
-            altitude_data (AltitudeData): The altitude data to display
+            altitude_data (GPSCompleteData): The altitude data to display
         """
         altitude = altitude_data.altitude
         altitude_units = altitude_data.altitude_units

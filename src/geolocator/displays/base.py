@@ -1,4 +1,4 @@
-from geolocator.gps_modules import GPSData, AltitudeData
+from geolocator.gps_modules import GPSData
 
 
 class Display:

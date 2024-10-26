@@ -4,9 +4,9 @@ import logging
 from geolocator.gps_modules.base import (
     GPSModule,
     GPSData,
-    AltitudeData,
     GPSCompleteData,
 )
+
 
 class GPSModuleType(enum.Enum):
     FAKE = "fake"
@@ -14,8 +14,14 @@ class GPSModuleType(enum.Enum):
 
 
 def get_gps_module(module_type: str = GPSModuleType.FAKE.value) -> GPSModule:
-    # Return the appropriate GPS module based on the environment
+    """Return the appropriate GPS module based on the environment. Defaults to FakeGPSModule if no module is specified.
 
+    Args:
+        module_type (str, optional): The GPS module to use. Defaults to GPSModuleType.FAKE.value.
+
+    Returns:
+        GPSModule: The GPS module to use.
+    """
     if module_type == GPSModuleType.FAKE.value:
         return init_fake_gps()
 

@@ -5,8 +5,12 @@ import os
 import logging
 
 
-def is_raspberrypi():
-    """Check if the current device is a Raspberry Pi."""
+def is_raspberrypi() -> bool:
+    """Check if the current device is a Raspberry Pi.
+
+    Returns:
+        bool: True if the current device is a Raspberry Pi, False otherwise
+    """
 
     try:
         with io.open("/sys/firmware/devicetree/base/model", "r") as m:
@@ -55,7 +59,15 @@ def update_system_datetime(time_to_set: Union[datetime, str]):
 
 
 def get_boolean_env_var(var_name: str, default: bool = False) -> bool:
-    """Get a boolean environment variable."""
+    """Get a boolean environment variable.
+
+    Args:
+        var_name (str): The name of the environment variable
+        default (bool): The default value to return if the environment variable is not set
+
+    Returns:
+        bool: The value of the environment variable if it is set, otherwise the default
+    """
 
     value = os.getenv(var_name)
     if value is None:

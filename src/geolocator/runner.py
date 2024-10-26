@@ -15,6 +15,12 @@ class GeolocatorRunner:
         self.last_update_time = None
 
     def run(self, display: Display, gps_module_type: str):
+        """Run the geolocator application.
+
+        Args:
+            display (Display): The display to use
+            gps_module_type (str): The GPS module to use
+        """
         gps_module = get_gps_module(module_type=gps_module_type)
 
         display.startup_screen()
@@ -25,7 +31,6 @@ class GeolocatorRunner:
 
         while True:
             altitude_data = gps_module.get_altitude_data()
-
 
             if altitude_data:
                 # Update the system time if the last update time was more than the
@@ -40,7 +45,11 @@ class GeolocatorRunner:
                 display.render(altitude_data)
 
     def update_time_has_expired(self) -> bool:
-        """Check if the last update time was more than the update time interval ago."""
+        """Check if the last update time was more than the update time interval ago.
+
+        Returns:
+            bool: True if the last update time was more than the update time interval ago, False otherwise
+        """
         if not self.last_update_time:
             return True
 
@@ -50,7 +59,7 @@ class GeolocatorRunner:
 
 
 def cli():
-    # get the system arguments
+    """Run the geolocator application from the command line. Parses the command line arguments and runs the application."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument(

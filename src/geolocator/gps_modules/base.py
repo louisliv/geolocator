@@ -11,6 +11,18 @@ SQLITE_FILE = "geolocator.db"
 
 
 class GPSData:
+    """A class to represent GPS data. This class is meant to be subclassed by other classes that provide more specific GPS data.
+
+    Class Attributes:
+        latitude (float): The latitude of the GPS data.
+        longitude (float): The longitude of the GPS data.
+        gps_time (str): The time the GPS data was recorded.
+        closest_city_name (str): The name of the closest city to the GPS data.
+        timestamp (float): The timestamp of the GPS data.
+        closest_city_timezone (str): The timezone of the closest city to the GPS data.
+        local_time (str): The local time of the closest city to the GPS data
+    """
+
     def __init__(
         self,
         latitude: float,
@@ -33,20 +45,21 @@ class GPSData:
         return f"<GPSData(latitude={self.latitude}, longitude={self.longitude}, gps_time={self.gps_time}, closest_city_name={self.closest_city_name})>"
 
 
-class AltitudeData:
-    def __init__(
-        self,
-        altitude: float,
-        altitude_units: str,
-    ):
-        self.altitude = altitude
-        self.altitude_units = altitude_units
-
-    def __repr__(self):
-        return f"<AltitudeData(altitude={self.altitude}, altitude_units={self.altitude_units})>"
-
-
 class GPSCompleteData(GPSData):
+    """A class to represent GPS data that includes altitude information.
+
+    Class Attributes:
+        latitude (float): The latitude of the GPS data.
+        longitude (float): The longitude of the GPS data.
+        gps_time (str): The time the GPS data was recorded.
+        closest_city_name (str): The name of the closest city to the GPS data.
+        timestamp (float): The timestamp of the GPS data.
+        closest_city_timezone (str): The timezone of the closest city to the GPS data.
+        local_time (str): The local time of the closest city to the GPS data
+        altitude (float): The altitude of the GPS data.
+        altitude_units (str): The units of the altitude data.
+    """
+
     def __init__(
         self,
         altitude: float,
@@ -61,13 +74,29 @@ class GPSCompleteData(GPSData):
 
 class GPSModule:
     def read(self) -> GPSData:
+        """Read GPS data from the GPS module and return it as a GPSData object.
+
+        Raises:
+            NotImplementedError: This method must be implemented by the subclass
+
+        Returns:
+            GPSData: The GPS data read from the GPS module
+        """
         raise NotImplementedError
 
     def get_altitude_data(self) -> GPSCompleteData:
+        """Get the GPS data from the GPS module, including altitude data.
+
+        Raises:
+            NotImplementedError: This method must be implemented by the subclass
+
+        Returns:
+            GPSCompleteData: The GPS data read from the GPS module, including altitude data
+        """
         raise NotImplementedError
 
     def get_current_city(self, lat, lng) -> Optional[City]:
-
+        """Get the closest city to the given latitude and longitude via the SQL database."""
         engine = get_sql_engine()
         with Session(engine) as session:
             return get_closest_city(session, lat, lng)

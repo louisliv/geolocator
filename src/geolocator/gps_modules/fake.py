@@ -1,3 +1,4 @@
+from typing import Dict
 from datetime import datetime
 from random import randint
 import pytz
@@ -26,6 +27,11 @@ class FakeGPSModule(GPSModule):
         super().__init__()
 
     def read(self) -> GPSCompleteData:
+        """Read the GPS data from the fake GPS module. This method will return fake GPS data if the fake GPS module is enabled.
+
+        Returns:
+            GPSCompleteData: The GPS data read from the fake GPS module.
+        """
         gps_data = self.retreive_fake_gps_data()
 
         latitude = gps_data["latitude"]
@@ -49,7 +55,12 @@ class FakeGPSModule(GPSModule):
             local_time=timestamp,
         )
 
-    def retreive_fake_gps_data(self):
+    def retreive_fake_gps_data(self) -> Dict:
+        """Attempt to retrieve fake GPS data from a remote server. If the server is not available, return default fake GPS data.
+
+        Returns:
+            Dict: The fake GPS data.
+        """
         try:
             response = requests.get("http://localhost:5000/get_geo_data")
 
@@ -83,9 +94,15 @@ class FakeGPSModule(GPSModule):
         }
 
     def get_altitude_data(self):
+        """Get the altitude data from the fake GPS module."""
         return self.read()
 
-    def get_random_city(self):
+    def get_random_city(self) -> City:
+        """Get a random city from the database.
+
+        Returns:
+            City: A random city from the database.
+        """
         engine = get_sql_engine()
         with Session(engine) as session:
             # get all cities

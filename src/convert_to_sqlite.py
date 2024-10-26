@@ -10,17 +10,32 @@ CSV_FILE = "uscities.csv"
 
 
 def create_database_file() -> Engine:
-    # Create a new SQLite database file if it doesn't exist
+    """Create a new SQLite database file if it doesn't exist"""
     engine = create_engine(f"sqlite:///{SQL_FILE}")
     Base.metadata.create_all(engine)
     return engine
 
 
 def load_csv_data() -> DataFrame:
+    """Load the city data from the CSV file
+
+    Returns:
+        DataFrame: The city data from the CSV file
+    """
     return read_csv(CSV_FILE)
 
 
 def format_csv_data(data: DataFrame) -> DataFrame:
+    """Format the city data from the CSV file. This function will rename
+    the city and city_ascii columns and convert the lat, lng, ranking, and population
+    columns to the correct data types.
+
+    Args:
+        data (DataFrame): _description_
+
+    Returns:
+        DataFrame: _description_
+    """
     column_names_to_change = [
         ("city", "name"),
         ("city_ascii", "name_ascii"),
@@ -45,7 +60,14 @@ def format_csv_data(data: DataFrame) -> DataFrame:
 
 
 def create_or_update_city(city: Dict[str, Any]) -> City:
-    # Create a new city object if it doesn't exist
+    """Create or update a City object from the given dictionary
+
+    Args:
+        city (Dict[str, Any]): The city data
+
+    Returns:
+        City: The City object
+    """
     city_obj = City(
         id=city["id"],
         name=city["name"],
@@ -65,6 +87,9 @@ def create_or_update_city(city: Dict[str, Any]) -> City:
 
 
 def main():
+    """Main function to convert the CSV data containing all
+    the GPS data for all cities in the US to an SQLite database
+    """
     engine = create_database_file()
     data = load_csv_data()
     data = format_csv_data(data)
