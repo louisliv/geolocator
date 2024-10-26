@@ -45,6 +45,8 @@ class FakeGPSModule(GPSModule):
             timestamp=gps_data["gps_time"],
             altitude=gps_data["altitude"],
             altitude_units=gps_data["altitude_units"],
+            closest_city_timezone=current_city.timezone,
+            local_time=timestamp,
         )
 
     def retreive_fake_gps_data(self):

@@ -10,3 +10,6 @@ class Display:
 
     def cleanup(self):
         raise NotImplementedError
+
+    def startup_screen(self):
+        pass

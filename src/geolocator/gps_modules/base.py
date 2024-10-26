@@ -17,6 +17,8 @@ class GPSData:
         longitude: float,
         gps_time: str,
         closest_city_name: str,
+        closest_city_timezone: str,
+        local_time: str,
         timestamp: float,
     ):
         self.latitude = latitude
@@ -24,6 +26,8 @@ class GPSData:
         self.gps_time = gps_time
         self.closest_city_name = closest_city_name
         self.timestamp = timestamp
+        self.closest_city_timezone = closest_city_timezone
+        self.local_time = local_time
 
     def __repr__(self):
         return f"<GPSData(latitude={self.latitude}, longitude={self.longitude}, gps_time={self.gps_time}, closest_city_name={self.closest_city_name})>"
@@ -42,22 +46,15 @@ class AltitudeData:
         return f"<AltitudeData(altitude={self.altitude}, altitude_units={self.altitude_units})>"
 
 
-class GPSCompleteData:
+class GPSCompleteData(GPSData):
     def __init__(
         self,
-        latitude: float,
-        longitude: float,
-        gps_time: str,
-        closest_city_name: str,
-        timestamp: float,
         altitude: float,
         altitude_units: str,
+        *args,
+        **kwargs,
     ):
-        self.latitude = latitude
-        self.longitude = longitude
-        self.gps_time = gps_time
-        self.closest_city_name = closest_city_name
-        self.timestamp = timestamp
+        super().__init__(*args, **kwargs)
         self.altitude = altitude
         self.altitude_units = altitude_units
 

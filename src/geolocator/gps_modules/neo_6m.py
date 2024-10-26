@@ -13,7 +13,6 @@ import pynmea2
 from pynmea2 import GGA, RMC
 
 from geolocator.gps_modules.base import GPSModule, GPSData, GPSCompleteData
-from geolocator.displays.utils import file_logger
 
 DEV_PORT = "/dev/ttyUSB0"
 
@@ -58,6 +57,8 @@ class Neo6MGPSModule(GPSModule):
             longitude=lng,
             gps_time=timestamp,
             closest_city_name=f"{current_city.name}, {current_city.state_id}",
+            closest_city_timezone=current_city.timezone,
+            local_time=timestamp,
             timestamp=timestamp_epoch,
         )
 
@@ -102,6 +103,8 @@ class Neo6MGPSModule(GPSModule):
             gps_time=gps_data.gps_time,
             closest_city_name=gps_data.closest_city_name,
             timestamp=gps_data.timestamp,
+            closest_city_timezone=gps_data.closest_city_timezone,
+            local_time=gps_data.local_time,
             altitude=altitude,
             altitude_units=altitude_units,
         )

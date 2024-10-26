@@ -107,13 +107,13 @@ class OLEDDisplay(Display):
             font=self.xs_font,
         )
 
-    def render(self, gps_data: GPSCompleteData):
+    def render(self, gps_data: GPSCompleteData, time_to_show: datetime = None):
         closest_city = gps_data.closest_city_name
 
-        gps_datetime = datetime.strptime(gps_data.gps_time, "%Y-%m-%d %H:%M:%S")
+        time_to_show = time_to_show or datetime.now()
 
         with canvas(self.oled) as draw:
-            self.display_clock(gps_datetime, draw)
+            self.display_clock(time_to_show, draw)
             self.display_city(closest_city, draw)
             self.display_altitude(gps_data, draw)
 
@@ -131,12 +131,12 @@ class OLEDDisplay(Display):
 
         return city_name
 
-    def display_clock(self, gps_time: datetime, draw: ImageDraw):
+    def display_clock(self, time_to_show: datetime, draw: ImageDraw):
         # Display the current time on the OLED display using a large font
 
         font_to_use = self.large_font
 
-        time_to_display = gps_time.strftime(CLOCK_FORMAT)
+        time_to_display = time_to_show.strftime(CLOCK_FORMAT)
 
         # We want to put the text at bottom right of the display, so we need to calculate the x and y coordinates
         bounding_box = self.oled.bounding_box
