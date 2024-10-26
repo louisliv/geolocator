@@ -3,6 +3,7 @@ from datetime import datetime
 import io
 import os
 import logging
+import subprocess
 
 
 def is_raspberrypi() -> bool:
@@ -17,7 +18,7 @@ def is_raspberrypi() -> bool:
             if "raspberry pi" in m.read().lower():
                 return True
     except Exception:
-        pass
+        return False
 
     return False
 
@@ -51,8 +52,6 @@ def update_system_datetime(time_to_set: Union[datetime, str]):
     time_str = time_to_set.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-        import subprocess
-
         subprocess.run(["sudo", "date", "-s", time_str])
     except Exception:
         pass
@@ -70,7 +69,7 @@ def get_boolean_env_var(var_name: str, default: bool = False) -> bool:
     """
 
     value = os.getenv(var_name)
-    if value is None:
+    if not value:
         return default
 
     return value.lower() in ["true", "1", "yes", "y"]

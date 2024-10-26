@@ -34,8 +34,17 @@ cd src
 watchmedo auto-restart -p "*.py" -R python -- cli.py --display=emulator --gps=neo_6m
 ```
 
-### Install the package on the Raspberry Pi
+### Run tests
 
+Pytest is used for testing. To run the tests:
+```bash
+cd src
+pytest
+```
+
+## Install the package on the Raspberry Pi
+
+### Build the package
 Create a wheel file:
 ```bash
 python setup.py bdist_wheel

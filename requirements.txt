@@ -10,6 +10,7 @@ GeoAlchemy2==0.15.2
 geocoder==1.38.1
 greenlet==3.1.1
 idna==3.10
+iniconfig==2.0.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
 luma.core==2.4.2
@@ -20,11 +21,13 @@ numpy==2.1.2
 packaging==24.1
 pandas==2.2.3
 pillow==11.0.0
+pluggy==1.5.0
 pyfiglet==1.0.2
 pyftdi==0.55.4
 pygame==2.6.1
 pynmea2==1.19.0
 pyserial==3.5
+pytest==8.3.3
 python-dateutil==2.9.0.post0
 pytz==2024.2
 pyusb==1.2.1

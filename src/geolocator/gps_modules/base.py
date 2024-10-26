@@ -1,7 +1,5 @@
 from typing import Optional
-import pkgutil
 
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from geolocator.client import get_closest_city, get_sql_engine
