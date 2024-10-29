@@ -45,7 +45,8 @@ class GeolocatorRunner:
                 display.render(altitude_data)
 
     def update_time_has_expired(self) -> bool:
-        """Check if the last update time was more than the update time interval ago.
+        """Check if the last update time was more than the update time interval ago. Will return True
+        if the system time has never been updated.
 
         Returns:
             bool: True if the last update time was more than the update time interval ago, False otherwise
